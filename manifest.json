@@ -1,0 +1,22 @@
+{
+  "name": "Planner",
+  "short_name": "Planner",
+  "description": "Планировщик задач, проектов и целей",
+  "start_url": "/planner/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%230a84ff'/%3E%3Cpath d='M96 48l-48 48 48 48 48-48z' fill='none' stroke='white' stroke-width='8' stroke-linejoin='round'/%3E%3Cpath d='M96 64v64M72 96h48' stroke='white' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%230a84ff'/%3E%3Cpath d='M256 128l-128 128 128 128 128-128z' fill='none' stroke='white' stroke-width='24' stroke-linejoin='round'/%3E%3Cpath d='M256 170v172M192 256h128' stroke='white' stroke-width='24' stroke-linecap='round'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
