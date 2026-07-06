@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Динамика показателей по неделям</title>
+  <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('theme');
+        if (saved === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+        } else if (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    :root {
+      --bg: #18181B;
+      --surface: #202023;
+      --surface-alt: #26262A;
+      --chip-bg: #232326;
+      --border: #2A2A2E;
+      --border-strong: #34343A;
+      --border-soft: #2E2E33;
+      --text-primary: #F4F4F5;
+      --text-strong: #E4E4E7;
+      --text-body: #D4D4D8;
+      --text-secondary: #B4B4BC;
+      --text-muted: #9B9BA3;
+      --text-dim: #8B8B93;
+      --text-hover: #C4C4CC;
+      --placeholder: #5C5C64;
+      --input-bg: #1C1C1F;
+      --accent: #8B7CF6;
+      --accent-dark: #6D5AE6;
+      --accent-soft-text: #B4A8FA;
+      --success: #4ADE80;
+      --danger: #F87171;
+      --warning: #FBBF24;
+      --btn-hover-bg: #323238;
+      --danger-bg: #2A2020;
+      --danger-border: #472A2A;
+      --danger-hover-bg: #332424;
+      --hover-border: #3E3E45;
+      --row-group-bg: #26262A;
+      --muted-text: #6B6B73;
+      --glow-icon: rgba(139, 124, 246, 0.35);
+      --glow-btn: rgba(139, 124, 246, 0.3);
+      --glow-btn-hover: rgba(139, 124, 246, 0.45);
+      --tab-active-bg: rgba(139, 124, 246, 0.14);
+      --focus-ring: rgba(139, 124, 246, 0.2);
+      --tab-active-shadow: rgba(109, 90, 230, 0.2);
+      --danger-btn-hover-shadow: rgba(248, 113, 113, 0.18);
+      --success-bg-soft: rgba(74, 222, 128, 0.1);
+      --success-border-soft: rgba(74, 222, 128, 0.25);
+      --success-border-mid: rgba(74, 222, 128, 0.35);
+      --success-bg-mid: rgba(74, 222, 128, 0.12);
+      --success-border-strong: rgba(74, 222, 128, 0.3);
+      --danger-bg-soft: rgba(248, 113, 113, 0.1);
+      --danger-border-mid: rgba(248, 113, 113, 0.35);
+      --danger-bg-mid: rgba(248, 113, 113, 0.12);
+      --danger-border-strong: rgba(248, 113, 113, 0.3);
+      color-scheme: dark;
+    }
+
+    [data-theme="light"] {
+      --bg: #F2F2F5;
+      --surface: #FFFFFF;
+      --surface-alt: #F1F1F4;
+      --chip-bg: #ECECF1;
+      --border: #E3E3E9;
+      --border-strong: #D6D6DE;
+      --border-soft: #E9E9EE;
+      --text-primary: #1B1B1F;
+      --text-strong: #26262B;
+      --text-body: #3A3A42;
+      --text-secondary: #55555E;
+      --text-muted: #6E6E78;
+      --text-dim: #7C7C86;
+      --text-hover: #45454D;
+      --placeholder: #B0B0B9;
+      --input-bg: #FFFFFF;
+      --accent: #6D5AE6;
+      --accent-dark: #5645C9;
+      --accent-soft-text: #5645C9;
+      --success: #16A34A;
+      --danger: #DC2626;
+      --warning: #B45309;
+      --btn-hover-bg: #ECECF1;
+      --danger-bg: #FDF1F1;
+      --danger-border: #F3C6C6;
+      --danger-hover-bg: #FBE4E4;
+      --hover-border: #C7C7D1;
+      --row-group-bg: #F1F1F4;
+      --muted-text: #A6A6AF;
+      --glow-icon: rgba(109, 90, 230, 0.25);
+      --glow-btn: rgba(109, 90, 230, 0.2);
+      --glow-btn-hover: rgba(109, 90, 230, 0.3);
+      --tab-active-bg: rgba(109, 90, 230, 0.1);
+      --focus-ring: rgba(109, 90, 230, 0.18);
+      --tab-active-shadow: rgba(109, 90, 230, 0.15);
+      --danger-btn-hover-shadow: rgba(220, 38, 38, 0.15);
+      --success-bg-soft: rgba(22, 163, 74, 0.08);
+      --success-border-soft: rgba(22, 163, 74, 0.2);
+      --success-border-mid: rgba(22, 163, 74, 0.25);
+      --success-bg-mid: rgba(22, 163, 74, 0.1);
+      --success-border-strong: rgba(22, 163, 74, 0.25);
+      --danger-bg-soft: rgba(220, 38, 38, 0.08);
+      --danger-border-mid: rgba(220, 38, 38, 0.25);
+      --danger-bg-mid: rgba(220, 38, 38, 0.1);
+      --danger-border-strong: rgba(220, 38, 38, 0.25);
+      color-scheme: light;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text-strong);
+      min-height: 100vh;
+      padding: 24px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .app-wrapper {
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    /* ===== Хедер ===== */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 16px;
+      background: var(--surface);
+      padding: 18px 24px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .header-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: -0.02em;
+      box-shadow: 0 4px 14px var(--glow-icon);
+    }
+
+    .header-title {
+      font-weight: 600;
+      font-size: 1.3rem;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+
+    .header-title span {
+      font-weight: 400;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 9px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+      background: var(--border);
+      color: var(--text-strong);
+      border: 1px solid var(--border-strong);
+    }
+
+    .btn:hover {
+      background: var(--btn-hover-bg);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: white;
+      border: 1px solid transparent;
+      box-shadow: 0 4px 14px var(--glow-btn);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 6px 20px var(--glow-btn-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid var(--danger-border);
+    }
+
+    .btn-danger:hover {
+      background: var(--danger-hover-bg);
+      box-shadow: 0 4px 14px var(--danger-btn-hover-shadow);
+    }
+
+    .theme-toggle {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border-soft);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--hover-border);
+      transform: translateY(-1px);
+    }
+
+    .theme-toggle-icon {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      transition: transform 0.3s ease;
+      display: inline-block;
+    }
+
+    [data-theme="light"] .theme-toggle-icon {
+      transform: rotate(180deg);
+      color: var(--accent-dark);
+    }
+
+    .save-status {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      padding: 6px 16px;
+      background: var(--chip-bg);
+      border-radius: 40px;
+      border: 1px solid var(--border-soft);
+      white-space: nowrap;
+      transition: all 0.3s ease;
+    }
+
+    .save-status.saved {
+      color: var(--success);
+      background: var(--success-bg-soft);
+      border-color: var(--success-border-soft);
+    }
+
+    /* ===== Навигация по неделям ===== */
+    .week-nav {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .week-tab {
+      padding: 9px 22px;
+      border: 1px solid var(--border-soft);
+      border-radius: 10px;
+      background: var(--surface);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+
+    .week-tab:hover {
+      border-color: var(--hover-border);
+      background: var(--surface-alt);
+      color: var(--text-hover);
+    }
+
+    .week-tab.active {
+      border-color: var(--accent-dark);
+      background: var(--tab-active-bg);
+      color: var(--accent-soft-text);
+      box-shadow: 0 2px 10px var(--tab-active-shadow);
+    }
+
+    /* ===== Карточка недели ===== */
+    .week-card {
+      display: none;
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .week-card.active {
+      display: block;
+    }
+
+    .week-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .week-card-title {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    /* ===== Таблицы ===== */
+    .table-responsive {
+      overflow-x: auto;
+      border-radius: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    th {
+      background: var(--surface-alt);
+      color: var(--text-secondary);
+      font-weight: 600;
+      padding: 12px 10px;
+      text-align: center;
+      border-bottom: 1px solid var(--border-strong);
+      white-space: nowrap;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    th:first-child {
+      text-align: left;
+      padding-left: 16px;
+    }
+
+    td {
+      padding: 10px 10px;
+      text-align: center;
+      border-bottom: 1px solid var(--surface-alt);
+      vertical-align: middle;
+      color: var(--text-body);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: var(--surface-alt);
+    }
+
+    .employee-name {
+      text-align: left;
+      padding-left: 16px;
+      font-weight: 500;
+      color: var(--text-primary);
+      white-space: nowrap;
+      font-size: 0.84rem;
+    }
+
+    .input-field {
+      width: 80px;
+      padding: 7px 6px;
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      font-size: 0.84rem;
+      text-align: center;
+      background: var(--input-bg);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      font-weight: 500;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--focus-ring);
+    }
+
+    .input-field::placeholder {
+      color: var(--placeholder);
+      font-weight: 400;
+      font-size: 0.75rem;
+    }
+
+    .input-field.turnover-field {
+      width: 110px;
+      text-align: right;
+    }
+
+    .input-field.green {
+      background: var(--success-bg-soft);
+      border-color: var(--success-border-mid);
+      color: var(--success);
+    }
+
+    .input-field.red {
+      background: var(--danger-bg-soft);
+      border-color: var(--danger-border-mid);
+      color: var(--danger);
+    }
+
+    .input-field.neutral {
+      background: var(--input-bg);
+      border-color: var(--border-strong);
+      color: var(--text-primary);
+    }
+
+    .share-cell {
+      font-weight: 600;
+      border-radius: 30px;
+      padding: 4px 14px;
+      display: inline-block;
+      min-width: 65px;
+      font-size: 0.84rem;
+      border: 1px solid transparent;
+    }
+
+    .share-cell.green {
+      background: var(--success-bg-mid);
+      color: var(--success);
+      border-color: var(--success-border-strong);
+    }
+
+    .share-cell.red {
+      background: var(--danger-bg-mid);
+      color: var(--danger);
+      border-color: var(--danger-border-strong);
+    }
+
+    .share-cell.neutral {
+      background: var(--surface-alt);
+      color: var(--text-muted);
+      border-color: var(--border-strong);
+    }
+
+    /* ===== Сводная таблица ===== */
+    .summary-section {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    .summary-title {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--text-primary);
+      margin-bottom: 14px;
+    }
+
+    .summary-title small {
+      font-weight: 400;
+      font-size: 0.83rem;
+      color: var(--text-dim);
+    }
+
+    .summary-table th {
+      background: var(--surface-alt);
+    }
+
+    .summary-table .total-row td {
+      font-weight: 600;
+      background: var(--surface-alt);
+      border-top: 1px solid var(--border-strong);
+    }
+
+    .summary-table .employee-name {
+      font-weight: 600;
+    }
+
+    /* ===== Таблица динамики ===== */
+    .dynamics-section {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .dynamics-title {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--text-primary);
+      margin-bottom: 14px;
+    }
+
+    .dynamics-title small {
+      font-weight: 400;
+      font-size: 0.83rem;
+      color: var(--text-dim);
+    }
+
+    .dynamics-table th {
+      background: var(--surface-alt);
+    }
+
+    .dynamics-table .metric-name {
+      font-weight: 500;
+      color: var(--text-secondary);
+      font-size: 0.79rem;
+      text-align: left;
+      padding-left: 16px;
+    }
+
+    .dynamics-table .employee-group {
+      background: var(--surface-alt);
+      font-weight: 600;
+    }
+
+    .dynamics-table .employee-group td {
+      border-top: 1px solid var(--border-strong);
+      padding: 8px 10px;
+    }
+
+    .trend-up {
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .trend-down {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .trend-stable {
+      color: var(--warning);
+      font-weight: 600;
+    }
+
+    .trend-arrow {
+      display: inline-block;
+      margin-right: 4px;
+    }
+
+    .week-value {
+      font-weight: 500;
+    }
+
+    /* ===== Адаптив ===== */
+    @media (max-width: 768px) {
+      body { padding: 12px; }
+      .header { padding: 16px; flex-direction: column; align-items: stretch; }
+      .header-actions { flex-wrap: wrap; }
+      .week-nav { justify-content: center; }
+      .week-tab { padding: 8px 16px; font-size: 0.75rem; }
+      .input-field { width: 60px; padding: 6px 4px; font-size: 0.75rem; }
+      .input-field.turnover-field { width: 80px; }
+      th { padding: 10px 6px; font-size: 0.6rem; }
+      td { padding: 8px 4px; }
+      .week-card { padding: 16px; }
+      .summary-section { padding: 16px; }
+      .dynamics-section { padding: 16px; }
+      .dynamics-table td, .dynamics-table th { padding: 6px 4px; font-size: 0.7rem; }
+    }
+
+    @media (max-width: 480px) {
+      .header-title { font-size: 1.1rem; }
+      .header-icon { width: 36px; height: 36px; font-size: 16px; }
+      .input-field { width: 50px; padding: 4px 2px; font-size: 0.7rem; }
+      .input-field.turnover-field { width: 65px; }
+      .share-cell { min-width: 50px; padding: 3px 8px; font-size: 0.7rem; }
+      .week-tab { padding: 6px 12px; font-size: 0.7rem; }
+      .dynamics-table td, .dynamics-table th { padding: 4px 2px; font-size: 0.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+
+  <!-- ===== HEADER ===== -->
+  <div class="header">
+    <div class="header-left">
+      <div class="header-icon">ДП</div>
+      <div class="header-title">
+        Динамика показателей
+        <span>· по неделям</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Переключить тему" title="Переключить тему">
+        <span class="theme-toggle-icon">◐</span>
+      </button>
+      <button class="btn btn-primary" onclick="saveAllData()">Сохранить всё</button>
+      <button class="btn btn-danger" onclick="clearAllData()">Очистить всё</button>
+      <span id="saveStatus" class="save-status">Нет сохранений</span>
+    </div>
+  </div>
+
+  <!-- ===== НАВИГАЦИЯ ПО НЕДЕЛЯМ ===== -->
+  <div class="week-nav" id="weekNav">
+    <button class="week-tab active" data-week="0">Неделя 1</button>
+    <button class="week-tab" data-week="1">Неделя 2</button>
+    <button class="week-tab" data-week="2">Неделя 3</button>
+    <button class="week-tab" data-week="3">Неделя 4</button>
+  </div>
+
+  <!-- ===== КОНТЕЙНЕР ДЛЯ НЕДЕЛЬ ===== -->
+  <div id="weeksContainer"></div>
+
+  <!-- ===== СВОДНАЯ ТАБЛИЦА ===== -->
+  <div class="summary-section">
+    <div class="summary-title">
+      Итоги за месяц
+      <small>· свод по всем неделям</small>
+    </div>
+    <div class="table-responsive">
+      <table class="summary-table" id="summaryTable">
+        <thead>
+          <tr>
+            <th style="text-align: left; padding-left: 18px;">Сотрудник</th>
+            <th>Оборот</th>
+            <th>Услуги</th>
+            <th>Допки</th>
+            <th>Доля от оборота</th>
+            <th>Строки</th>
+            <th>Чеки в час</th>
+          </tr>
+        </thead>
+        <tbody id="summaryBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== ТАБЛИЦА ДИНАМИКИ ===== -->
+  <div class="dynamics-section">
+    <div class="dynamics-title">
+      Динамика показателей по неделям
+      <small>· изменение относительно первой недели</small>
+    </div>
+    <div class="table-responsive">
+      <table class="dynamics-table" id="dynamicsTable">
+        <thead>
+          <tr>
+            <th style="text-align: left; padding-left: 18px; min-width: 140px;">Сотрудник</th>
+            <th style="min-width: 90px;">Показатель</th>
+            <th>Неделя 1</th>
+            <th>Неделя 2</th>
+            <th>Неделя 3</th>
+            <th>Неделя 4</th>
+            <th style="min-width: 80px;">Динамика</th>
+          </tr>
+        </thead>
+        <tbody id="dynamicsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const employees = [
+    'Абрамова Евгения Сергеевна',
+    'Аксененко Андрей Сергеевич',
+    'Зубаков Павел Владимирович',
+    'Иванов Дмитрий Сергеевич',
+    'Чистохина Неля Георгиевна'
+  ];
+
+  const WEEK_COUNT = 4;
+  const METRICS = [
+    { key: 'turnover', label: 'Оборот', format: 'number' },
+    { key: 'services', label: 'Услуги', format: 'number' },
+    { key: 'extras', label: 'Допки', format: 'number' },
+    { key: 'share', label: 'Доля от оборота', format: 'percent' },
+    { key: 'rows', label: 'Строки', format: 'number' },
+    { key: 'checks', label: 'Чеки в час', format: 'number' }
+  ];
+
+  // === Вспомогательные функции ===
+  function parseNumber(str) {
+    if (!str) return 0;
+    let clean = String(str).replace(/\s/g, '').replace(',', '.');
+    return parseFloat(clean) || 0;
+  }
+
+  function formatNumber(num) {
+    if (num === '' || num === null || num === undefined || isNaN(num)) return '0';
+    let parts = String(num).split('.');
+    let integerPart = parts[0];
+    let decimalPart = parts[1] !== undefined ? '.' + parts[1] : '';
+    return integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + decimalPart;
+  }
+
+  function formatPercent(num) {
+    return num.toFixed(2) + '%';
+  }
+
+  function getCellValue(input) {
+    return parseNumber(input.value);
+  }
+
+  function setCellValue(input, value) {
+    if (value === 0 || value === '') {
+      input.value = '';
+      return;
+    }
+    const num = parseNumber(value);
+    if (!isNaN(num) && num > 0) {
+      input.value = formatNumber(num);
+    } else {
+      input.value = String(value);
+    }
+  }
+
+  // === Подсветка ===
+  function updateRowColor(input) {
+    const value = parseNumber(input.value);
+    input.classList.remove('green', 'red', 'neutral');
+    if (input.value === '' || value === 0) {
+      input.classList.add('neutral');
+      return;
+    }
+    input.classList.add(value >= 1.5 ? 'green' : 'red');
+  }
+
+  function updateShareColor(shareSpan, shareValue) {
+    shareSpan.classList.remove('green', 'red', 'neutral');
+    if (shareValue === 0) {
+      shareSpan.classList.add('neutral');
+      return;
+    }
+    shareSpan.classList.add(shareValue >= 0.80 ? 'green' : 'red');
+  }
+
+  // === Получение данных со всех недель ===
+  function getWeekData() {
+    const allData = [];
+    for (let w = 0; w < WEEK_COUNT; w++) {
+      const card = document.querySelector(`.week-card[data-week="${w}"]`);
+      const weekRows = [];
+      if (card) {
+        const rows = card.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+          const inputs = row.querySelectorAll('.input-field');
+          const name = row.querySelector('.employee-name').textContent;
+          weekRows.push({
+            name: name,
+            turnover: parseNumber(inputs[0].value),
+            services: parseNumber(inputs[1].value),
+            extras: parseNumber(inputs[2].value),
+            rows: parseNumber(inputs[3].value),
+            checks: parseNumber(inputs[4].value),
+            share: 0
+          });
+          const turnover = weekRows[weekRows.length - 1].turnover;
+          const services = weekRows[weekRows.length - 1].services;
+          const extras = weekRows[weekRows.length - 1].extras;
+          weekRows[weekRows.length - 1].share = turnover !== 0 ? ((services + extras) / turnover) * 100 : 0;
+        });
+      }
+      allData.push(weekRows);
+    }
+    return allData;
+  }
+
+  // === Создание строки для недельной таблицы ===
+  function createWeekRow(employeeName, weekIndex) {
+    const tr = document.createElement('tr');
+
+    const tdName = document.createElement('td');
+    tdName.className = 'employee-name';
+    tdName.textContent = employeeName;
+    tr.appendChild(tdName);
+
+    // Оборот
+    const tdTurnover = document.createElement('td');
+    const inputTurnover = document.createElement('input');
+    inputTurnover.type = 'text';
+    inputTurnover.inputMode = 'decimal';
+    inputTurnover.placeholder = '0';
+    inputTurnover.className = 'input-field turnover-field';
+    inputTurnover.dataset.week = weekIndex;
+    inputTurnover.dataset.field = 'turnover';
+    inputTurnover.dataset.employee = employeeName;
+    tdTurnover.appendChild(inputTurnover);
+    tr.appendChild(tdTurnover);
+
+    // Услуги
+    const tdServices = document.createElement('td');
+    const inputServices = document.createElement('input');
+    inputServices.type = 'text';
+    inputServices.inputMode = 'decimal';
+    inputServices.placeholder = '0';
+    inputServices.className = 'input-field';
+    inputServices.dataset.week = weekIndex;
+    inputServices.dataset.field = 'services';
+    inputServices.dataset.employee = employeeName;
+    tdServices.appendChild(inputServices);
+    tr.appendChild(tdServices);
+
+    // Допки
+    const tdExtras = document.createElement('td');
+    const inputExtras = document.createElement('input');
+    inputExtras.type = 'text';
+    inputExtras.inputMode = 'decimal';
+    inputExtras.placeholder = '0';
+    inputExtras.className = 'input-field';
+    inputExtras.dataset.week = weekIndex;
+    inputExtras.dataset.field = 'extras';
+    inputExtras.dataset.employee = employeeName;
+    tdExtras.appendChild(inputExtras);
+    tr.appendChild(tdExtras);
+
+    // Доля
+    const tdShare = document.createElement('td');
+    const shareSpan = document.createElement('span');
+    shareSpan.className = 'share-cell neutral';
+    shareSpan.textContent = '0.00%';
+    tdShare.appendChild(shareSpan);
+    tr.appendChild(tdShare);
+
+    // Строки
+    const tdRows = document.createElement('td');
+    const inputRows = document.createElement('input');
+    inputRows.type = 'text';
+    inputRows.inputMode = 'decimal';
+    inputRows.placeholder = '0';
+    inputRows.className = 'input-field neutral';
+    inputRows.dataset.week = weekIndex;
+    inputRows.dataset.field = 'rows';
+    inputRows.dataset.employee = employeeName;
+    tdRows.appendChild(inputRows);
+    tr.appendChild(tdRows);
+
+    // Чеки в час
+    const tdChecks = document.createElement('td');
+    const inputChecks = document.createElement('input');
+    inputChecks.type = 'text';
+    inputChecks.inputMode = 'decimal';
+    inputChecks.placeholder = '0';
+    inputChecks.className = 'input-field';
+    inputChecks.dataset.week = weekIndex;
+    inputChecks.dataset.field = 'checks';
+    inputChecks.dataset.employee = employeeName;
+    tdChecks.appendChild(inputChecks);
+    tr.appendChild(tdChecks);
+
+    // === Обработчики ===
+    function updateShare() {
+      const turnover = parseNumber(inputTurnover.value);
+      const services = parseNumber(inputServices.value);
+      const extras = parseNumber(inputExtras.value);
+      let share = 0;
+      if (turnover !== 0) share = ((services + extras) / turnover) * 100;
+      if (!isFinite(share) || isNaN(share)) share = 0;
+      shareSpan.textContent = share.toFixed(2) + '%';
+      updateShareColor(shareSpan, share);
+    }
+
+    function handleInput(e) {
+      const input = e.target;
+      let raw = input.value.replace(/[^\d.,]/g, '').replace(',', '.');
+      if (raw !== '' && !isNaN(parseFloat(raw))) {
+        input.value = raw;
+      } else if (raw === '') {
+        input.value = '';
+      } else {
+        input.value = raw.slice(0, -1);
+      }
+      if (input === inputRows) {
+        updateRowColor(inputRows);
+      }
+      if (input === inputTurnover || input === inputServices || input === inputExtras) {
+        updateShare();
+      }
+      updateAllTables();
+    }
+
+    function handleBlur(e) {
+      const input = e.target;
+      if (input.value !== '') {
+        const num = parseNumber(input.value);
+        if (!isNaN(num) && num > 0) {
+          input.value = formatNumber(num);
+        } else if (num === 0) {
+          input.value = '0';
+        }
+      }
+      if (input === inputRows) {
+        updateRowColor(inputRows);
+      }
+      if (input === inputTurnover || input === inputServices || input === inputExtras) {
+        updateShare();
+      }
+      updateAllTables();
+    }
+
+    inputTurnover.addEventListener('input', handleInput);
+    inputTurnover.addEventListener('blur', handleBlur);
+    inputServices.addEventListener('input', handleInput);
+    inputServices.addEventListener('blur', handleBlur);
+    inputExtras.addEventListener('input', handleInput);
+    inputExtras.addEventListener('blur', handleBlur);
+    inputRows.addEventListener('input', handleInput);
+    inputRows.addEventListener('blur', handleBlur);
+    inputChecks.addEventListener('input', function(e) {
+      const input = e.target;
+      let raw = input.value.replace(/[^\d.,]/g, '').replace(',', '.');
+      if (raw !== '' && !isNaN(parseFloat(raw))) {
+        input.value = raw;
+      } else if (raw === '') {
+        input.value = '';
+      } else {
+        input.value = raw.slice(0, -1);
+      }
+      updateAllTables();
+    });
+    inputChecks.addEventListener('blur', function(e) {
+      const input = e.target;
+      if (input.value !== '') {
+        const num = parseNumber(input.value);
+        if (!isNaN(num) && num > 0) {
+          input.value = formatNumber(num);
+        } else if (num === 0) {
+          input.value = '0';
+        }
+      }
+      updateAllTables();
+    });
+
+    updateShare();
+    updateRowColor(inputRows);
+
+    return tr;
+  }
+
+  // === Создание недельной карточки ===
+  function createWeekCard(weekIndex) {
+    const card = document.createElement('div');
+    card.className = 'week-card' + (weekIndex === 0 ? ' active' : '');
+    card.dataset.week = weekIndex;
+
+    const header = document.createElement('div');
+    header.className = 'week-card-header';
+    header.innerHTML = `
+      <div class="week-card-title">Неделя ${weekIndex + 1}</div>
+    `;
+    card.appendChild(header);
+
+    const responsive = document.createElement('div');
+    responsive.className = 'table-responsive';
+    const table = document.createElement('table');
+    const thead = document.createElement('thead');
+    thead.innerHTML = `
+      <tr>
+        <th style="text-align: left; padding-left: 18px;">Сотрудник</th>
+        <th>Оборот</th>
+        <th>Услуги</th>
+        <th>Допки</th>
+        <th>Доля от оборота</th>
+        <th>Строки</th>
+        <th>Чеки в час</th>
+      </tr>
+    `;
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    employees.forEach(name => {
+      tbody.appendChild(createWeekRow(name, weekIndex));
+    });
+    table.appendChild(tbody);
+    responsive.appendChild(table);
+    card.appendChild(responsive);
+
+    return card;
+  }
+
+  // === Сводная таблица ===
+  function updateSummary() {
+    const summaryBody = document.getElementById('summaryBody');
+    summaryBody.innerHTML = '';
+
+    const weekData = getWeekData();
+
+    employees.forEach((name, idx) => {
+      const tr = document.createElement('tr');
+
+      const tdName = document.createElement('td');
+      tdName.className = 'employee-name';
+      tdName.textContent = name;
+      tr.appendChild(tdName);
+
+      let totalTurnover = 0;
+      let totalServices = 0;
+      let totalExtras = 0;
+      let totalRows = 0;
+      let totalChecks = 0;
+
+      for (let w = 0; w < WEEK_COUNT; w++) {
+        if (weekData[w] && weekData[w][idx]) {
+          const data = weekData[w][idx];
+          totalTurnover += data.turnover;
+          totalServices += data.services;
+          totalExtras += data.extras;
+          totalRows += data.rows;
+          totalChecks += data.checks;
+        }
+      }
+
+      const tdTurnover = document.createElement('td');
+      tdTurnover.textContent = totalTurnover > 0 ? formatNumber(totalTurnover) : '0';
+      tdTurnover.style.fontWeight = '500';
+      tr.appendChild(tdTurnover);
+
+      const tdServices = document.createElement('td');
+      tdServices.textContent = totalServices > 0 ? formatNumber(totalServices) : '0';
+      tdServices.style.fontWeight = '500';
+      tr.appendChild(tdServices);
+
+      const tdExtras = document.createElement('td');
+      tdExtras.textContent = totalExtras > 0 ? formatNumber(totalExtras) : '0';
+      tdExtras.style.fontWeight = '500';
+      tr.appendChild(tdExtras);
+
+      const tdShare = document.createElement('td');
+      const shareSpan = document.createElement('span');
+      shareSpan.className = 'share-cell neutral';
+      let share = 0;
+      if (totalTurnover !== 0) share = ((totalServices + totalExtras) / totalTurnover) * 100;
+      if (!isFinite(share) || isNaN(share)) share = 0;
+      shareSpan.textContent = share.toFixed(2) + '%';
+      updateShareColor(shareSpan, share);
+      tdShare.appendChild(shareSpan);
+      tr.appendChild(tdShare);
+
+      const tdRows = document.createElement('td');
+      tdRows.textContent = totalRows > 0 ? totalRows.toFixed(1) : '0';
+      tdRows.style.fontWeight = '500';
+      tr.appendChild(tdRows);
+
+      const tdChecks = document.createElement('td');
+      tdChecks.textContent = totalChecks > 0 ? totalChecks.toFixed(1) : '0';
+      tdChecks.style.fontWeight = '500';
+      tr.appendChild(tdChecks);
+
+      summaryBody.appendChild(tr);
+    });
+  }
+
+  // === Таблица динамики ===
+  function updateDynamics() {
+    const dynamicsBody = document.getElementById('dynamicsBody');
+    dynamicsBody.innerHTML = '';
+
+    const weekData = getWeekData();
+
+    employees.forEach((name, idx) => {
+      const employeeWeekData = [];
+      for (let w = 0; w < WEEK_COUNT; w++) {
+        if (weekData[w] && weekData[w][idx]) {
+          employeeWeekData.push(weekData[w][idx]);
+        } else {
+          employeeWeekData.push(null);
+        }
+      }
+
+      const hasData = employeeWeekData.some(d => d !== null);
+      if (!hasData) return;
+
+      METRICS.forEach((metric, mIdx) => {
+        const tr = document.createElement('tr');
+
+        if (mIdx === 0) {
+          const tdName = document.createElement('td');
+          tdName.className = 'employee-name';
+          tdName.textContent = name;
+          tdName.style.fontWeight = '600';
+          tdName.style.background = 'var(--row-group-bg)';
+          tr.appendChild(tdName);
+        } else {
+          const tdName = document.createElement('td');
+          tdName.style.background = 'var(--row-group-bg)';
+          tr.appendChild(tdName);
+        }
+
+        const tdMetric = document.createElement('td');
+        tdMetric.className = 'metric-name';
+        tdMetric.textContent = metric.label;
+        tr.appendChild(tdMetric);
+
+        const values = [];
+        for (let w = 0; w < WEEK_COUNT; w++) {
+          const td = document.createElement('td');
+          td.className = 'week-value';
+          if (employeeWeekData[w]) {
+            let val = employeeWeekData[w][metric.key] || 0;
+            if (metric.key === 'share') {
+              val = employeeWeekData[w].share || 0;
+            }
+            values.push(val);
+            td.textContent = metric.format === 'percent' ? formatPercent(val) : (val > 0 ? formatNumber(val) : '0');
+          } else {
+            values.push(0);
+            td.textContent = '—';
+            td.style.color = 'var(--muted-text)';
+          }
+          tr.appendChild(td);
+        }
+
+        const tdDynamics = document.createElement('td');
+        const firstVal = values[0] || 0;
+        const lastVal = values[3] || 0;
+
+        if (firstVal === 0 && lastVal === 0) {
+          tdDynamics.textContent = '—';
+          tdDynamics.style.color = 'var(--muted-text)';
+        } else if (firstVal === 0) {
+          tdDynamics.innerHTML = '<span class="trend-up">↗ +∞</span>';
+        } else {
+          const change = ((lastVal - firstVal) / Math.abs(firstVal)) * 100;
+          let arrow, className;
+          if (change > 5) {
+            arrow = '↗';
+            className = 'trend-up';
+          } else if (change < -5) {
+            arrow = '↘';
+            className = 'trend-down';
+          } else {
+            arrow = '→';
+            className = 'trend-stable';
+          }
+          tdDynamics.innerHTML = `<span class="${className}"><span class="trend-arrow">${arrow}</span> ${change > 0 ? '+' : ''}${change.toFixed(1)}%</span>`;
+        }
+        tr.appendChild(tdDynamics);
+
+        dynamicsBody.appendChild(tr);
+      });
+    });
+  }
+
+  // === Обновление всех таблиц ===
+  function updateAllTables() {
+    updateSummary();
+    updateDynamics();
+  }
+
+  // === Сохранение ===
+  function collectAllData() {
+    const allData = [];
+    for (let w = 0; w < WEEK_COUNT; w++) {
+      const card = document.querySelector(`.week-card[data-week="${w}"]`);
+      if (!card) continue;
+      const rows = card.querySelectorAll('tbody tr');
+      const weekRows = [];
+      rows.forEach(row => {
+        const inputs = row.querySelectorAll('.input-field');
+        weekRows.push({
+          turnover: inputs[0].value,
+          services: inputs[1].value,
+          extras: inputs[2].value,
+          rows: inputs[3].value,
+          checks: inputs[4].value
+        });
+      });
+      allData.push(weekRows);
+    }
+    return allData;
+  }
+
+  function restoreAllData(data) {
+    for (let w = 0; w < WEEK_COUNT; w++) {
+      const card = document.querySelector(`.week-card[data-week="${w}"]`);
+      if (!card || !data[w]) continue;
+      const rows = card.querySelectorAll('tbody tr');
+      rows.forEach((row, idx) => {
+        if (data[w][idx]) {
+          const inputs = row.querySelectorAll('.input-field');
+          inputs[0].value = data[w][idx].turnover || '';
+          inputs[1].value = data[w][idx].services || '';
+          inputs[2].value = data[w][idx].extras || '';
+          inputs[3].value = data[w][idx].rows || '';
+          inputs[4].value = data[w][idx].checks || '';
+          inputs[0].dispatchEvent(new Event('blur'));
+          inputs[1].dispatchEvent(new Event('blur'));
+          inputs[2].dispatchEvent(new Event('blur'));
+          inputs[3].dispatchEvent(new Event('blur'));
+          inputs[4].dispatchEvent(new Event('blur'));
+        }
+      });
+    }
+    updateAllTables();
+  }
+
+  function saveAllData() {
+    const data = collectAllData();
+    localStorage.setItem('weeklyData', JSON.stringify(data));
+    const status = document.getElementById('saveStatus');
+    status.textContent = 'Все данные сохранены';
+    status.className = 'save-status saved';
+    setTimeout(() => {
+      status.textContent = 'Нет сохранений';
+      status.className = 'save-status';
+    }, 3000);
+  }
+
+  function clearAllData() {
+    if (!confirm('Вы уверены, что хотите очистить все данные за все недели?')) return;
+    for (let w = 0; w < WEEK_COUNT; w++) {
+      const card = document.querySelector(`.week-card[data-week="${w}"]`);
+      if (!card) continue;
+      const inputs = card.querySelectorAll('.input-field');
+      inputs.forEach(input => input.value = '');
+      inputs.forEach(input => input.dispatchEvent(new Event('blur')));
+    }
+    localStorage.removeItem('weeklyData');
+    updateAllTables();
+    const status = document.getElementById('saveStatus');
+    status.textContent = 'Все данные очищены';
+    status.className = 'save-status';
+    setTimeout(() => {
+      status.textContent = 'Нет сохранений';
+      status.className = 'save-status';
+    }, 3000);
+  }
+
+  // === Навигация ===
+  function initNavigation() {
+    const tabs = document.querySelectorAll('.week-tab');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        tabs.forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        const weekIndex = parseInt(this.dataset.week);
+        document.querySelectorAll('.week-card').forEach(card => {
+          card.classList.remove('active');
+        });
+        const targetCard = document.querySelector(`.week-card[data-week="${weekIndex}"]`);
+        if (targetCard) targetCard.classList.add('active');
+      });
+    });
+  }
+
+  // === Тема ===
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  }
+
+  function toggleTheme() {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const next = isLight ? 'dark' : 'light';
+    applyTheme(next);
+    try {
+      localStorage.setItem('theme', next);
+    } catch (e) {}
+  }
+
+  function initTheme() {
+    let saved = null;
+    try {
+      saved = localStorage.getItem('theme');
+    } catch (e) {}
+    if (saved === 'light' || saved === 'dark') {
+      applyTheme(saved);
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+      applyTheme('light');
+    }
+  }
+
+  // === Инициализация ===
+  function init() {
+    initTheme();
+
+    const container = document.getElementById('weeksContainer');
+    for (let w = 0; w < WEEK_COUNT; w++) {
+      container.appendChild(createWeekCard(w));
+    }
+
+    const saved = localStorage.getItem('weeklyData');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        if (data && data.length === WEEK_COUNT) {
+          restoreAllData(data);
+          const status = document.getElementById('saveStatus');
+          status.textContent = 'Данные загружены';
+          status.className = 'save-status saved';
+          setTimeout(() => {
+            status.textContent = 'Нет сохранений';
+            status.className = 'save-status';
+          }, 3000);
+        }
+      } catch (e) {}
+    }
+
+    initNavigation();
+    updateAllTables();
+
+    document.addEventListener('input', function(e) {
+      if (e.target.classList.contains('input-field')) {
+        clearTimeout(window.summaryTimeout);
+        window.summaryTimeout = setTimeout(updateAllTables, 300);
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
